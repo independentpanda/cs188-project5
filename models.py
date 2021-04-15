@@ -193,8 +193,7 @@ class DigitClassificationModel(object):
         Trains the model.
         """
         "*** YOUR CODE HERE ***"
-        accuracy = 0
-        while accuracy < 0.9775:
+        while dataset.get_validation_accuracy() < 0.97:
             for x, y in dataset.iterate_once(self.batch_size):
                 loss = self.get_loss(x, y)
                 grad_wrt_W1, grad_wrt_b1, grad_wrt_W2, grad_wrt_b2 = \
@@ -203,4 +202,3 @@ class DigitClassificationModel(object):
                 self.b1.update(grad_wrt_b1, self.multiplier)
                 self.W2.update(grad_wrt_W2, self.multiplier)
                 self.b2.update(grad_wrt_b2, self.multiplier)
-                accuracy = dataset.get_validation_accuracy()
