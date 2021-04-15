@@ -139,14 +139,16 @@ class DigitClassificationModel(object):
     def __init__(self):
         # Initialize your model parameters here
         "*** YOUR CODE HERE ***"
-        self.multiplier = -0.05
-        self.batch_size = 100
+        self.multiplier = -0.23
+        self.batch_size = 50
         self.hidden_size = 250
         # what is input size???
         self.W1 = nn.Parameter(784, self.hidden_size)
         self.b1 = nn.Parameter(1, self.hidden_size)
-        self.W2 = nn.Parameter(self.hidden_size, 10)
-        self.b2 = nn.Parameter(1, 10)
+        self.W2 = nn.Parameter(self.hidden_size, self.hidden_size)
+        self.b2 = nn.Parameter(1, self.hidden_size)
+        self.W3 = nn.Parameter(self.hidden_size, 10)
+        self.b3 = nn.Parameter(1, 10)
 
     def run(self, x):
         """
@@ -167,6 +169,7 @@ class DigitClassificationModel(object):
         xW = nn.Linear(x, self.W1)
         predicted_y = nn.AddBias(xW, self.b1)
         predicted_y = nn.AddBias(nn.Linear(nn.ReLU(predicted_y), self.W2), self.b2)
+        predicted_y = nn.AddBias(nn.Linear(nn.ReLU(predicted_y), self.W3), self.b3)
         return predicted_y
 
     def get_loss(self, x, y):
