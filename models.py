@@ -67,6 +67,14 @@ class RegressionModel(object):
     def __init__(self):
         # Initialize your model parameters here
         "*** YOUR CODE HERE ***"
+        self.multiplier = -0.05
+        self.batch_size = 100
+        self.hidden_size = 300
+        # what is input size???
+        self.W1 = nn.Parameter(1, self.hidden_size)
+        self.b1 = nn.Parameter(1, self.hidden_size)
+        self.W2 = nn.Parameter(self.hidden_size, 1)
+        self.b2 = nn.Parameter(1, 1)
 
     def run(self, x):
         """
@@ -78,6 +86,11 @@ class RegressionModel(object):
             A node with shape (batch_size x 1) containing predicted y-values
         """
         "*** YOUR CODE HERE ***"
+        # f(x) = relu(x * W1 + b1) * W2 + b2
+        xW = nn.Linear(x, self.W1)
+        predicted_y = nn.AddBias(xW, self.b1)
+        predicted_y = nn.AddBias(nn.Linear(nn.ReLU(predicted_y), self.W2), self.b2)
+        return predicted_y
 
     def get_loss(self, x, y):
         """
@@ -90,12 +103,24 @@ class RegressionModel(object):
         Returns: a loss node
         """
         "*** YOUR CODE HERE ***"
+        return nn.SquareLoss(self.run(x), y)
 
     def train(self, dataset):
         """
         Trains the model.
         """
         "*** YOUR CODE HERE ***"
+        loss_scalar = float("inf")
+        while loss_scalar > 0.015:
+            for x, y in dataset.iterate_once(self.batch_size):
+                loss = self.get_loss(x, y)
+                grad_wrt_W1, grad_wrt_b1, grad_wrt_W2, grad_wrt_b2 = \
+                    nn.gradients(loss, [self.W1, self.b1, self.W2, self.b2])
+                self.W1.update(grad_wrt_W1, self.multiplier)
+                self.b1.update(grad_wrt_b1, self.multiplier)
+                self.W2.update(grad_wrt_W2, self.multiplier)
+                self.b2.update(grad_wrt_b2, self.multiplier)
+                loss_scalar = nn.as_scalar(loss)
 
 class DigitClassificationModel(object):
     """
@@ -114,6 +139,14 @@ class DigitClassificationModel(object):
     def __init__(self):
         # Initialize your model parameters here
         "*** YOUR CODE HERE ***"
+        self.multiplier = -0.05
+        self.batch_size = 100
+        self.hidden_size = 250
+        # what is input size???
+        self.W1 = nn.Parameter(784, self.hidden_size)
+        self.b1 = nn.Parameter(1, self.hidden_size)
+        self.W2 = nn.Parameter(self.hidden_size, 10)
+        self.b2 = nn.Parameter(1, 10)
 
     def run(self, x):
         """
@@ -130,6 +163,11 @@ class DigitClassificationModel(object):
                 (also called logits)
         """
         "*** YOUR CODE HERE ***"
+        # f(x) = relu(x * W1 + b1) * W2 + b2
+        xW = nn.Linear(x, self.W1)
+        predicted_y = nn.AddBias(xW, self.b1)
+        predicted_y = nn.AddBias(nn.Linear(nn.ReLU(predicted_y), self.W2), self.b2)
+        return predicted_y
 
     def get_loss(self, x, y):
         """
@@ -145,9 +183,21 @@ class DigitClassificationModel(object):
         Returns: a loss node
         """
         "*** YOUR CODE HERE ***"
+        return nn.SoftmaxLoss(self.run(x), y)
 
     def train(self, dataset):
         """
         Trains the model.
         """
         "*** YOUR CODE HERE ***"
+        accuracy = 0
+        while accuracy < 0.9775:
+            for x, y in dataset.iterate_once(self.batch_size):
+                loss = self.get_loss(x, y)
+                grad_wrt_W1, grad_wrt_b1, grad_wrt_W2, grad_wrt_b2 = \
+                    nn.gradients(loss, [self.W1, self.b1, self.W2, self.b2])
+                self.W1.update(grad_wrt_W1, self.multiplier)
+                self.b1.update(grad_wrt_b1, self.multiplier)
+                self.W2.update(grad_wrt_W2, self.multiplier)
+                self.b2.update(grad_wrt_b2, self.multiplier)
+                accuracy = dataset.get_validation_accuracy()
